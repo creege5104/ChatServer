@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/thirdparty",
+                "/usr/include/**",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/include/server",
+                "${workspaceFolder}/include/server/model",
+                "${workspaceFolder}/include/server/redis",
+                "${workspaceFolder}/include/server/db"
+            ],
+            "compilerPath": "/usr/bin/g++",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-x64"
+        }
+    ],
+    "version": 4
+}
