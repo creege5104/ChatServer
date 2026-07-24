@@ -1,0 +1,11 @@
+{
+    "ip":"127.0.0.1",
+    "port":3306,
+    "userName":"root",
+    "passWord":"54518151",
+    "dbName":"chat",
+    "minSize":10,
+    "maxSize":128,
+    "maxIdleTime":5000,
+    "timeOut":1000
+}

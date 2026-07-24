@@ -2,18 +2,18 @@
 #include <muduo/base/Logging.h>
 using namespace muduo;
 
-static string server = "127.0.0.1";
-static string user = "root";
-static string password = "54518151";
-static string dbname = "chat";
-static int port = 3306;
+// static string server = "127.0.0.1";
+// static string user = "root";
+// static string password = "54518151";
+// static string dbname = "chat";
+// static int port = 3306;
 
-MySQL::MySQL()
+MysqlConn::MysqlConn()
 {
     _conn = mysql_init(nullptr);
 }
 // 释放数据库连接资源
-MySQL::~MySQL()
+MysqlConn::~MysqlConn()
 {
     if (_conn != nullptr)
     {
@@ -21,14 +21,14 @@ MySQL::~MySQL()
     }
 }
 // 连接数据库
-bool MySQL::connect()
+bool MysqlConn::connect(string user, string password, string dbName, string ip, unsigned short port)
 {
-    MYSQL *p = mysql_real_connect(_conn, server.c_str(),
-                                  user.c_str(), password.c_str(), dbname.c_str(), port, nullptr, 0);
+    MYSQL *p = mysql_real_connect(_conn, ip.c_str(),
+                                  user.c_str(), password.c_str(), dbName.c_str(), port, nullptr, 0);
     if (p != nullptr)
     {
         // 设置字符集
-        mysql_query(_conn, "set names gbk");
+	    mysql_set_character_set(_conn, "utf8");
         LOG_INFO << "连接数据库成功！";
         return true;
     }
@@ -36,7 +36,7 @@ bool MySQL::connect()
     return false;
 }
 // 更新操作
-bool MySQL::update(string sql)
+bool MysqlConn::update(string sql)
 {
     if (mysql_query(_conn, sql.c_str()))
     {
@@ -46,7 +46,7 @@ bool MySQL::update(string sql)
     return true;
 }
 // 查询操作
-MYSQL_RES *MySQL::query(string sql)
+MYSQL_RES *MysqlConn::query(string sql)
 {
     if (mysql_query(_conn, sql.c_str()))
     {
@@ -54,4 +54,15 @@ MYSQL_RES *MySQL::query(string sql)
         return nullptr;
     }
     return mysql_use_result(_conn);
+}
+
+void MysqlConn::refreshAliveTime()
+{
+	m_alivetime = steady_clock::now();
+}
+
+long long MysqlConn::getAliveTime()
+{
+	milliseconds millsec = duration_cast<milliseconds>(steady_clock::now() - m_alivetime);
+	return millsec.count();
 }

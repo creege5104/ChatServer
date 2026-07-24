@@ -1,6 +1,6 @@
 #include "offline_message_model.h"
 #include <muduo/base/Logging.h>
-#include "db.h"
+#include "ConnPool.h"
 
 //存储用户的离线消息
 bool OffMsgModel::insert(int userid, string msg)
@@ -8,10 +8,10 @@ bool OffMsgModel::insert(int userid, string msg)
     char sql[1024] = {0};
     sprintf(sql, "insert into OfflineMessage(userid, message) values(%d, '%s')",
          userid, msg.c_str());
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    if (conn!=nullptr)
     {
-        if(mysql.update(sql))
+        if(conn->update(sql))
         {
             return true;
         }
@@ -24,10 +24,10 @@ bool OffMsgModel::remove(int userid)
 {
     char sql[1024] = {0};
     sprintf(sql, "delete from OfflineMessage where userid = %d", userid);
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    if (conn!=nullptr)
     {
-        if(mysql.update(sql))
+        if(conn->update(sql))
         {
             return true;
         }
@@ -40,10 +40,10 @@ vector<string> OffMsgModel::query(int userid)
 {
     char sql[1024] = {0};
     sprintf(sql, "select message from OfflineMessage where userid = %d", userid);
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    if (conn!=nullptr)
     {
-        MYSQL_RES *res = mysql.query(sql);
+        MYSQL_RES *res = conn->query(sql);
         if (res != nullptr)
         {
             MYSQL_ROW row;

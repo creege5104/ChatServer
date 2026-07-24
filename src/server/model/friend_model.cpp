@@ -1,16 +1,13 @@
 #include "friend_model.h"
-#include "db.h"
+#include "ConnPool.h"
 #include <string>
 
 void FriendModel::insert(int userid, int friendid)
 {
     char sql[1024] = {0};
     sprintf(sql, "insert into Friend (userid, friendid) values (%d, %d)", userid, friendid);
-    MySQL mysql;
-    if (mysql.connect())
-    {
-        mysql.update(sql);
-    }
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    conn->update(sql);
 }
 
 vector<User> FriendModel::query(int userid)
@@ -18,10 +15,10 @@ vector<User> FriendModel::query(int userid)
     vector<User> friends;
     char sql[1024] = {0};
     sprintf(sql, "select u.id, u.name, u.state from User u inner join Friend f on u.id = f.friendid where f.userid = %d", userid);
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    if (conn != nullptr)
     {
-        MYSQL_RES *res = mysql.query(sql);
+        MYSQL_RES *res = conn->query(sql);
         if (res)
         {
             MYSQL_ROW row;

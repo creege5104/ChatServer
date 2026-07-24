@@ -24,6 +24,8 @@ class ChatService
 public:
     //获取单例对象的接口函数
     static ChatService* instance();
+    ChatService(const ChatService& chat) = delete;
+    ChatService& operator=(const ChatService& chat) = delete;
     //获取消息对应的处理器
     MsgHandler getHandler(int msgid);
     //登录业务

@@ -1,5 +1,5 @@
 #include "user_model.h"
-#include "db.h"
+#include "ConnPool.h"
 #include <iostream>
 using namespace std;
 
@@ -8,16 +8,15 @@ bool UserModel::insert(User &user)
     char sql[1024] = {0};
     sprintf(sql, "insert into User(name, password, state) values('%s', '%s', '%s')",
          user.getName().c_str(), user.getPassword().c_str(), user.getState().c_str());
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    if(conn!=nullptr)
     {
-        if(mysql.update(sql))
+        if(conn->update(sql))
         {
-            user.setId(mysql_insert_id(mysql.getConnection()));
+            user.setId(mysql_insert_id(conn->getConnection()));
             return true;
         }
     }
-         
     return false;
 }
 
@@ -25,10 +24,10 @@ User UserModel::query(int id)
 {
     char sql[1024] = {0};
     sprintf(sql, "select * from User where id=%d", id);
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    if(conn!=nullptr)
     {
-        MYSQL_RES *res = mysql.query(sql);
+        MYSQL_RES *res = conn->query(sql);
         if (res != nullptr)
         {
             MYSQL_ROW row = mysql_fetch_row(res);
@@ -53,22 +52,19 @@ bool UserModel::updateState(User &user)
     char sql[1024] = {0};
     sprintf(sql, "update User set state = '%s' where id = %d", 
         user.getState().c_str(), user.getId());
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    if(conn != nullptr)
     {
-        return mysql.update(sql);
-    }
+        return conn->update(sql);
+    }    
     return false;
 }
 
 void UserModel::resetState()
 {
     char sql[1024] = "update User set state = 'offline' where state = 'online'";
-    MySQL mysql;
-    if (mysql.connect())
-    {
-        mysql.update(sql);
-    }
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    if(conn != nullptr) conn->update(sql);
 }
 
 bool UserModel::delete_(int id)

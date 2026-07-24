@@ -1,5 +1,5 @@
 #include "group_model.h"
-#include "db.h"
+#include "ConnPool.h"
 
 using namespace std;
 
@@ -9,12 +9,12 @@ bool GroupModel::createGroup(Group &group)
     char sql[1024] = {0};
     sprintf(sql, "insert into AllGroup(groupname,groupdesc) values('%s','%s')",
         group.getName().c_str(), group.getDesc().c_str());
-    MySQL mysql;
-    if (mysql.connect())
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    if (conn != nullptr)
     {
-        if(mysql.update(sql))
+        if(conn->update(sql))
         {
-            group.setId(mysql_insert_id(mysql.getConnection()));
+            group.setId(mysql_insert_id(conn->getConnection()));
             return true;
         }
     }
@@ -26,10 +26,10 @@ void GroupModel::addGroup(int uid, int gid, string role)
     char sql[1024] = {0};
     sprintf(sql, "insert into GroupUser(groupid, userid, grouprole) values(%d, %d,'%s')",
             gid, uid, role.c_str());
-    MySQL mysql;
-    if(mysql.connect())
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    if(conn!=nullptr)
     {
-        mysql.update(sql);
+        conn->update(sql);
     }
 
 }
@@ -42,10 +42,10 @@ vector<Group>GroupModel::queryGroups(int uid)
 
     vector<Group>groups;
 
-    MySQL mysql;
-    if(mysql.connect())
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    if(conn!=nullptr)
     {
-        MYSQL_RES *res = mysql.query(sql);
+        MYSQL_RES *res = conn->query(sql);
         if(res!=nullptr)
         {
             MYSQL_ROW row;
@@ -65,7 +65,7 @@ vector<Group>GroupModel::queryGroups(int uid)
         sprintf(sql, "select u.id, u.name, u.state, g.grouprole from User u \
             inner join GroupUser g on g.userid = u.id where g.groupid=%d", group.getId());
 
-        MYSQL_RES *res = mysql.query(sql);
+        MYSQL_RES *res = conn->query(sql);
         if(res!=nullptr)
         {
             MYSQL_ROW row;
@@ -91,10 +91,10 @@ vector<int>GroupModel::queryGroupUsers(int uid, int gid)
 
     vector<int>users;
 
-    MySQL mysql;
-    if(mysql.connect())
+    shared_ptr<MysqlConn> conn = ConnPool::getPool()->getConn();
+    if(conn!=nullptr)
     {
-        MYSQL_RES *res = mysql.query(sql);
+        MYSQL_RES *res = conn->query(sql);
         if(res!=nullptr)
         {
             MYSQL_ROW row;
